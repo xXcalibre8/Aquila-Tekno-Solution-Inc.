@@ -1,0 +1,158 @@
+body {
+    background-color: #0f172a;
+    color: #cbd5e1;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background-color: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 16px;
+}
+
+.header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header .breadcrumb {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.header .breadcrumb a {
+    color: #94a3b8;
+    text-decoration: none;
+}
+
+.header .breadcrumb a:hover {
+    color: #cbd5e1;
+}
+
+.header .notification-button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 1.25rem;
+}
+
+.header .notification-button:hover {
+    color: #cbd5e1;
+}
+
+.main-content {
+    padding: 32px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #334155;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.card-title .member-count {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.view-all-button {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.view-all-button:hover {
+    color: #2563eb;
+}
+
+.card-content {
+    padding-top: 16px;
+}
+
+.member {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.member:hover .chevron {
+    opacity: 1;
+}
+
+.member-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+}
+
+.member-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.member-role {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.chevron {
+    font-size: 1rem;
+    color: #475569;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
