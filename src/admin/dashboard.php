@@ -22,28 +22,48 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="db1.css">
-    
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        body {
+            display: flex;
+        }
+        .container {
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            position: fixed;
+            height: 100%;
+            background-color: #283a7a;
+            color: white;
+            padding: 20px;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
-            <h2>AQUILA CORPS</h2>
-            <ul>
-                <a href="dashboard.php"><p>Dashboard</p></a>
-                <a href="all_employees.php"><p>Employees</p></a>
-                <a href="all_departments.php"><p>Departments</p></a>
-                <a href="attendance.php"><p>Attendance</p></a>
-                <a href="jobs.php"><p>Jobs</p></a>
-                <a href="candidates.php"><p>Candidates</p></a>
-                <a href="leaves.php"><p>Leaves</p></a>
-                <a href="holidays.php"><p>Holidays</p></a>
-                <a href="../login_page.php"><p>Logout</p></a>
-            </ul>
-            <div class="theme-switch">
-                <button>Light</button>
-                <button>Dark</button>
-            </div>
+            <h1>
+            <img src="../design/aquila.png" alt="Logo">
+                AQUILA CORPS
+            </h1>
+            <a href="dashboard.php"><p>Dashboard</p></a>
+            <a href="all_employees.php"><p>Employees</p></a>
+            <a href="all_departments.php"><p>Departments</p></a>
+            <a href="attendance.php"><p>Attendance</p></a>
+            <a href="jobs.php"><p>Jobs</p></a>
+            <a href="candidates.php"><p>Candidates</p></a>
+            <a href="leaves.php"><p>Leaves</p></a>
+            <a href="holidays.php"><p>Holidays</p></a>
+            <a href="../login_page.php"><p>Logout</p></a>
         </div>
+    </div>
+
         <div class="content">
             <div class="top-bar">
                 <h1>Hello User 👋</h1>
@@ -231,4 +251,4 @@ $conn->close();
         renderCalendar();
     </script>
 </body>
-</html></div></tr></div>
+</html>

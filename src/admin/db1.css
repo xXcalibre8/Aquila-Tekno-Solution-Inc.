@@ -2,10 +2,13 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+   
+   
   }
   
   body {
       font-family: Arial, sans-serif;
+      background-color: #16213e; /* Navy blue */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -41,60 +44,53 @@
     box-sizing: border-box;
   }
   
-  
   /* Sidebar styling */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #283a7a;
+    color: white;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+}
 
-  .sidebar {
-      width: 250px;
-      height: 100vh;
-      background-color: #283a7a;
-      color: white;
-      padding: 20px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-  }
-  
-  .sidebar h1 {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5em;
-      margin-bottom: 30px;
-      text-align: center;
-  }
-  
-  .sidebar h1 img {
-      width: 60px;
-      height: auto;
-      margin-right: 10px;
-  }
-  
-  .sidebar a {
-      color: #fff;
-      text-decoration: none;
-      margin: 10px 0;
-      padding: 10px 15px;
-      border-radius: 5px;
-      transition: background-color 0.3s ease;
-  }
-  
-  .sidebar a:hover {
-      background-color: #3b4e9e;
-  }
-  
-  /* Highlight the active page link */
-  .sidebar a.active {
-      background-color: #3b4e9e;
-      font-weight: bold;
-  }
-  
-  .sidebar a p {
-      margin: 0;
-  }
+.sidebar h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.sidebar h1 img {
+    width: 65px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.sidebar a {
+    color: #fff;
+    text-decoration: none;
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar a:hover {
+    background-color: #3b4e9e;
+}
+
+.sidebar a p {
+    margin: 0;
+}
+
   /* Main Content */
   .main-content {
       margin-left: 250px;
@@ -109,11 +105,13 @@
   .container {
       display: flex;
       height: 100vh;
+      
   }
   
   .content {
       flex: 1;
       padding: 20px;
+      
   }
   .content h1 {
       margin: 0;
@@ -123,6 +121,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      color: white;
+
   }
   .cards {
       display: flex;

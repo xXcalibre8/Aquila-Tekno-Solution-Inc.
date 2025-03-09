@@ -2,12 +2,21 @@
 // Include database connection
 include("../config.php");
 
-// Fetch employee data from the database
-if (!$con) {
-    die("Connection failed: " . mysqli_connect_error());
-}
+// Check if there is a search query
+$searchQuery = isset($_GET['search']) ? $_GET['search'] : '';
 
-$result = $con->query("SELECT * FROM employees");
+// Prepare SQL query with search functionality
+if (!empty($searchQuery)) {
+    // Using CONCAT to match first name and last name as a single string for full name search
+    $stmt = $con->prepare("SELECT * FROM employees WHERE CONCAT(first_name, ' ', last_name) LIKE ?");
+    $searchTerm = '%' . $searchQuery . '%';
+    $stmt->bind_param("s", $searchTerm);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    // Default query to select all employees if no search term is provided
+    $result = $con->query("SELECT * FROM employees");
+}
 ?>
 
 <!DOCTYPE html>
@@ -24,18 +33,19 @@ $result = $con->query("SELECT * FROM employees");
 <!-- Sidebar -->
 <div class="sidebar">
     <h1>
-        <img src="../design/aquila.png" alt="Logo">
+        <img src="IMG/aquila.png" alt="Logo">
         AQUILA CORPS
     </h1>
     <a href="dashboard.php"><p>Dashboard</p></a>
     <a href="all_employees.php"><p>Employees</p></a>
+    <a href="candidates.php"><p>Applicants</p></a>
     <a href="all_departments.php"><p>Departments</p></a>
     <a href="attendance.php"><p>Attendance</p></a>
     <a href="jobs.php"><p>Jobs</p></a>
-    <a href="candidates.php"><p>Candidates</p></a>
+    
     <a href="leaves.php"><p>Leaves</p></a>
-    <a href="holidays.php"><p>Holidays</p></a>
-    <a href="../login_page.php"><p>Logout</p></a>
+    
+    <a href="login.html"><p>Logout</p></a>
 </div>
 
 <!-- Main Content -->
@@ -55,9 +65,13 @@ $result = $con->query("SELECT * FROM employees");
                         </select> 
                         entries
                     </div>
-                    <div class="filter">
-                        <label for="search">Search Employee:</label>
-                        <input type="search" id="search" placeholder="Enter name/city/position">
+                    <div class="srch_btn">
+                        <form action="all_employees.php" method="get" id="searchForm">
+                            <label for="search">Search Employee:</label>
+                            <input type="search" id="search" name="search" placeholder="Enter full name" value="<?php echo htmlspecialchars($searchQuery); ?>">
+                            <button type="submit">Search</button>
+                            <button type="button" onclick="clearSearch()">Cancel</button>
+                        </form>
                     </div>
                 </div>
                 <div class="addMemberBtn">
@@ -67,13 +81,12 @@ $result = $con->query("SELECT * FROM employees");
             <table>
                 <thead>
                     <tr class="heading">
-                        <th>SL No</th>
+                        <th>Number</th>
                         <th>Full Name</th>
                         <th>Age</th>
                         <th>City</th>
                         <th>Position</th>
                         <th>Salary</th>
-                        <th>Start Date</th>
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Action</th>
@@ -89,14 +102,14 @@ $result = $con->query("SELECT * FROM employees");
                         echo "<td>" . htmlspecialchars($row['age']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['city']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['position']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['salary']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['start_date']) . "</td>";
+                        echo "<td>" . number_format($row['salary'], 0, '.', ',') . "</td>";
                         echo "<td>" . htmlspecialchars($row['email']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['phone']) . "</td>";
                         echo "<td>
-                         <button onclick=\"openEditEmployeePopup(" . $row['id'] . ", '" . addslashes($row['first_name']) . "', '" . addslashes($row['last_name']) . "', '" . $row['age'] . "', '" . addslashes($row['city']) . "', '" . addslashes($row['position']) . "', '" . $row['salary'] . "', '" . $row['start_date'] . "', '" . $row['email'] . "', '" . $row['phone'] . "')\">Edit</button>
-                        <a href='delete_employee.php?id=" . $row['id'] . "'><button>Delete</button></a>
+                            <button onclick=\"openEditEmployeePopup(" . $row['id'] . ", '" . addslashes($row['first_name']) . "', '" . addslashes($row['last_name']) . "', '" . $row['age'] . "', '" . addslashes($row['city']) . "', '" . addslashes($row['position']) . "', '" . $row['salary'] . "', '" . $row['email'] . "', '" . $row['phone'] . "')\">Edit</button>
+                            <a href='delete_employee.php?id=" . $row['id'] . "'><button>Delete</button></a>
                         </td>";
+                        echo "</tr>";
                     }
                     ?>
                 </tbody>
@@ -120,7 +133,7 @@ $result = $con->query("SELECT * FROM employees");
         </header>
         <div class="body">
             <form action="edit_employee.php" method="POST" enctype="multipart/form-data" id="editEmployeeForm">
-                <input type="hidden" name="id" id="editId"> <!-- Hidden input to store employee ID -->
+                <input type="hidden" name="id" id="editId">
                 <div class="form_control">
                     <label for="editFName">First Name:</label>
                     <input type="text" name="first_name" id="editFName" required>
@@ -146,10 +159,6 @@ $result = $con->query("SELECT * FROM employees");
                     <input type="text" name="salary" id="editSalary" required>
                 </div>
                 <div class="form_control">
-                    <label for="editSDate">Start Date:</label>
-                    <input type="date" name="start_date" id="editSDate" required>
-                </div>
-                <div class="form_control">
                     <label for="editEmail">Email:</label>
                     <input type="email" name="email" id="editEmail" required>
                 </div>
@@ -162,6 +171,7 @@ $result = $con->query("SELECT * FROM employees");
         </div>
     </div>
 </div>
+
 <!-- Add Employee Popup Form -->
 <div class="dark_bg" id="addEmployeePopup" style="display: none;">
     <div class="popup">
@@ -196,10 +206,6 @@ $result = $con->query("SELECT * FROM employees");
                     <input type="text" name="salary" id="salary" required>
                 </div>
                 <div class="form_control">
-                    <label for="sDate">Start Date:</label>
-                    <input type="date" name="start_date" id="sDate" required>
-                </div>
-                <div class="form_control">
                     <label for="email">Email:</label>
                     <input type="email" name="email" id="email" required>
                 </div>
@@ -207,19 +213,17 @@ $result = $con->query("SELECT * FROM employees");
                     <label for="phone">Phone:</label>
                     <input type="number" name="phone" id="phone" required>
                 </div>
-                <button type="submit" class="submitBtn">Submit</button>
+                <button type="submit" class="submitBtn">Add Employee</button>
             </form>
         </div>
     </div>
 </div>
 
-
-
+<!-- JavaScript for Popup Forms and Clear Search -->
 <script>
-function openEditEmployeePopup(id, firstName, lastName, age, city, position, salary, startDate, email, phone) {
+function openEditEmployeePopup(id, firstName, lastName, age, city, position, salary, email, phone) {
     document.getElementById('editEmployeePopup').style.display = 'flex';
-    
-    // Set the values in the form fields
+
     document.getElementById('editId').value = id;
     document.getElementById('editFName').value = firstName;
     document.getElementById('editLName').value = lastName;
@@ -227,14 +231,15 @@ function openEditEmployeePopup(id, firstName, lastName, age, city, position, sal
     document.getElementById('editCity').value = city;
     document.getElementById('editPosition').value = position;
     document.getElementById('editSalary').value = salary;
-    document.getElementById('editSDate').value = startDate;
     document.getElementById('editEmail').value = email;
     document.getElementById('editPhone').value = phone;
+    
 }
 
 function closeEditEmployeePopup() {
     document.getElementById('editEmployeePopup').style.display = 'none';
 }
+
 function openAddEmployeePopup() {
     document.getElementById('addEmployeePopup').style.display = 'flex';
 }
@@ -243,7 +248,10 @@ function closeAddEmployeePopup() {
     document.getElementById('addEmployeePopup').style.display = 'none';
 }
 
-
+function clearSearch() {
+    // Redirect to the same page without search parameters
+    window.location.href = 'all_employees.php';
+}
 </script>
 
 </body>

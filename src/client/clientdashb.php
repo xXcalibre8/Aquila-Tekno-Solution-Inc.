@@ -49,7 +49,7 @@ $latestCreatedAt = $row['latest_created_at'];
       <a href="clientdashb.php" class="nav-link" id="dashboard-link">Dashboard</a>
       <a href="scheduling.php" class="nav-link" id="scheduling-link">Scheduling</a>
       <a href="payment.php" class="nav-link" id="payment-link">Payment</a>
-      <a href="login_page.php" class="nav-link" id="settings-link">Logout</a>
+      <a href="../login_page.php" class="nav-link" id="settings-link">Logout</a>
       <div class="theme-toggle">
        
       </div>
