@@ -1,6 +1,17 @@
 <?php
 // Include the database connection file
+session_start();
 include '../config.php';
+
+if (!isset($_SESSION['id'])) {
+    header("Location: login_page.php");
+    exit();
+}
+
+if ($_SESSION['roles'] !== 'admin') {
+    header("Location: login_page.php");
+    exit();
+}
 
 // Fetch appointments data from the database
 $appointments = [];
@@ -15,62 +26,71 @@ if ($result->num_rows > 0) {
 
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="db1.css">
     <link rel="stylesheet" href="dashboard.css">
-    <style>
-        body {
-            display: flex;
-        }
-        .container {
-            display: flex;
-        }
-        .sidebar {
-            width: 250px;
-            position: fixed;
-            height: 100%;
-            background-color: #283a7a;
-            color: white;
-            padding: 20px;
-        }
-        .content {
-            margin-left: 250px;
-            padding: 20px;
-            flex-grow: 1;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
-            <h1>
-            <img src="../design/aquila.png" alt="Logo">
-                AQUILA CORPS
-            </h1>
-            <a href="dashboard.php"><p>Dashboard</p></a>
-            <a href="all_employees.php"><p>Employees</p></a>
-            <a href="all_departments.php"><p>Departments</p></a>
-            <a href="attendance.php"><p>Attendance</p></a>
-            <a href="jobs.php"><p>Jobs</p></a>
-            <a href="candidates.php"><p>Candidates</p></a>
-            <a href="leaves.php"><p>Leaves</p></a>
-            <a href="holidays.php"><p>Holidays</p></a>
-            <a href="../login_page.php"><p>Logout</p></a>
+            <div class="logo-section">
+                <img src="../design/aquila.png" alt="Logo">
+                <h1>AQUILA CORPS</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="dashboard.php" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="all_employees.php" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    <span>Employees</span>
+                </a>
+                <a href="all_departments.php" class="nav-link">
+                    <i class="fas fa-building"></i>
+                    <span>Departments</span>
+                </a>
+                <a href="attendance.php" class="nav-link">
+                    <i class="fas fa-clock"></i>
+                    <span>Attendance</span>
+                </a>
+                <a href="jobs.php" class="nav-link">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Jobs</span>
+                </a>
+                <a href="candidates.php" class="nav-link">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Candidates</span>
+                </a>
+                <a href="leaves.php" class="nav-link">
+                    <i class="fas fa-calendar-minus"></i>
+                    <span>Leaves</span>
+                </a>
+                <a href="holidays.php" class="nav-link">
+                    <i class="fas fa-calendar"></i>
+                    <span>Holidays</span>
+                </a>
+                <a href="../login_page.php" class="nav-link logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
         </div>
-    </div>
 
-        <div class="content">
+        <main class="main-content">
             <div class="top-bar">
                 <h1>Hello User 👋</h1>
                 <div>
                     <span>Bossing | HR Manager</span>
                 </div>
             </div>
+            
             <div class="cards">
                 <div class="card">
                     <h3>Total Employee</h3>
@@ -89,6 +109,7 @@ $conn->close();
                     <p>250</p>
                 </div>
             </div>
+
             <div class="schedule">
                 <h2>My Schedule</h2>
                 <p>Wednesday, July 6, 2023</p>
@@ -97,6 +118,7 @@ $conn->close();
                     <li>12:00 PM - Magento Developer - Resume Review</li>
                 </ul>
             </div>
+
             <div class="attendance">
                 <h2>Attendance Overview</h2>
                 <table>
@@ -127,31 +149,38 @@ $conn->close();
                     </tbody>
                 </table>
             </div>
+
             <div class="calendar-container">
                 <div class="calendar-header">
-                    <button id="prevMonth" style="background-color: #283a7a; color: white; border: none; padding: 5px 10px;">&lt;</button>
-                    <div id="calendarMonth">November 2024</div>
-                    <button id="nextMonth" style="background-color: #283a7a; color: white; border: none; padding: 5px 10px;">&gt;</button>
+                    <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                    <div id="calendarMonth"></div>
+                    <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
                 </div>
-                <div class="calendar-grid" id="calendarGrid">
-                    <!-- Days of the Week -->
-                    <div class="day-name">Sun</div>
-                    <div class="day-name">Mon</div>
-                    <div class="day-name">Tue</div>
-                    <div class="day-name">Wed</div>
-                    <div class="day-name">Thu</div>
-                    <div class="day-name">Fri</div>
-                    <div class="day-name">Sat</div>
+                <div class="calendar-weekdays">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
                 </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
             </div>
-            <div id="appointmentsModal" class="modal">
+
+            <!-- Calendar Modal -->
+            <div id="appointmentModal" class="modal">
                 <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2>Appointments</h2>
-                    <ul id="appointmentsList"></ul>
+                    <div class="modal-header">
+                        <h2>Appointments for <span id="modalDate"></span></h2>
+                        <span class="close">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <ul id="appointmentsList"></ul>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
     <script>
         // Pass appointments from PHP to JavaScript
@@ -160,91 +189,111 @@ $conn->close();
         // Get elements
         const calendarMonth = document.getElementById('calendarMonth');
         const calendarGrid = document.getElementById('calendarGrid');
-        const prevMonthButton = document.getElementById('prevMonth');
-        const nextMonthButton = document.getElementById('nextMonth');
-        const modal = document.getElementById('appointmentsModal');
-        const closeModal = document.querySelector('.close');
-        const appointmentsList = document.getElementById('appointmentsList');
-
-        // Initialize current date
+        const modal = document.getElementById('appointmentModal');
+        const modalDate = document.getElementById('modalDate');
+        const closeBtn = document.querySelector('.close');
         let currentDate = new Date();
 
-        // Function to render the calendar for the given month and year
         function renderCalendar() {
-            const month = currentDate.getMonth(); // 0-11
             const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
 
-            // Set month name and year
-            const options = { year: 'numeric', month: 'long' };
-            calendarMonth.textContent = currentDate.toLocaleDateString('en-US', options);
+            // Update header with month and year
+            calendarMonth.textContent = currentDate.toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+            });
 
-            // Get the first day of the month and number of days in the month
-            const firstDay = new Date(year, month, 1).getDay(); // 0 (Sunday) to 6 (Saturday)
-            const lastDate = new Date(year, month + 1, 0).getDate(); // Number of days in the month
+            // Clear grid first
+            calendarGrid.innerHTML = '';
 
-            // Clear previous days
-            calendarGrid.innerHTML = `
-                <div class="day-name">Sun</div>
-                <div class="day-name">Mon</div>
-                <div class="day-name">Tue</div>
-                <div class="day-name">Wed</div>
-                <div class="day-name">Thu</div>
-                <div class="day-name">Fri</div>
-                <div class="day-name">Sat</div>
-            `;
+            // Add weekday headers
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            weekdays.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day-name';
+                dayDiv.textContent = day;
+                calendarGrid.appendChild(dayDiv);
+            });
 
-            // Add empty divs for the days before the 1st of the month
+            // Get first day and last day of month
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            // Add empty cells for days before start of month
             for (let i = 0; i < firstDay; i++) {
                 const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'day empty';
                 calendarGrid.appendChild(emptyDiv);
             }
 
-            // Add the actual days of the month
-            for (let day = 1; day <= lastDate; day++) {
+            // Add days of the month
+            for (let date = 1; date <= lastDate; date++) {
                 const dayDiv = document.createElement('div');
-                dayDiv.classList.add('day');
-                dayDiv.textContent = day;
+                dayDiv.className = 'day';
+                dayDiv.textContent = date;
 
-                // Check if this day has any appointments
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayAppointments = appointments.filter(appointment => appointment.appointment_date === dateStr);
+                // Highlight today
+                if (year === today.getFullYear() && 
+                    month === today.getMonth() && 
+                    date === today.getDate()) {
+                    dayDiv.classList.add('today');
+                }
+
+                // Check for appointments
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+                const dayAppointments = appointments.filter(apt => apt.appointment_date === dateStr);
 
                 if (dayAppointments.length > 0) {
-                    dayDiv.classList.add('appointment-day'); // Optional: highlight the day
-
-                    // Add click event to open modal with appointments
-                    dayDiv.addEventListener('click', () => showAppointmentsModal(dayAppointments));
+                    dayDiv.classList.add('appointment-day');
+                    dayDiv.addEventListener('click', () => {
+                        showAppointments(dateStr, dayAppointments);
+                    });
                 }
 
                 calendarGrid.appendChild(dayDiv);
             }
         }
 
-        // Show the modal with appointments for the clicked day
-        function showAppointmentsModal(dayAppointments) {
-            appointmentsList.innerHTML = ''; // Clear the existing list
-            dayAppointments.forEach(appointment => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `Client ID: ${appointment.client_id} - Project: ${appointment.project_name} - Date: ${appointment.appointment_date}`;
-                appointmentsList.appendChild(listItem);
+        function showAppointments(date, appointments) {
+            modalDate.textContent = new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
             });
-            modal.style.display = "block";
+
+            const appointmentsList = document.getElementById('appointmentsList');
+            appointmentsList.innerHTML = appointments.map(apt => `
+                <li>
+                    <strong>${apt.project_name}</strong><br>
+                    Client ID: ${apt.client_id}
+                </li>
+            `).join('');
+
+            modal.style.display = 'block';
         }
 
-        // Close the modal
-        closeModal.addEventListener('click', () => {
-            modal.style.display = "none";
-        });
-
-        // Event listeners for buttons to navigate months
-        prevMonthButton.addEventListener('click', () => {
+        // Event Listeners
+        document.getElementById('prevMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar();
         });
 
-        nextMonthButton.addEventListener('click', () => {
+        document.getElementById('nextMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() + 1);
             renderCalendar();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
         });
 
         // Initial render

@@ -1,86 +1,75 @@
 <?php
 session_start();
+include("config.php");
 require '../vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 date_default_timezone_set('Asia/Manila'); // Set to your timezone
 
-include("config.php");
+function sendOTP($email, $otp) {
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'aquilatekno@gmail.com';
+        $mail->Password = 'ofvrnqpchavqnref';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        $mail->setFrom('aquilatekno@gmail.com', 'Aquila Tekno Solutions');
+        $mail->addAddress($email);
+        $mail->isHTML(true);
+        $mail->Subject = 'Your Login OTP';
+        $mail->Body = "Your OTP for login is: <b>$otp</b>";
+
+        return $mail->send();
+    } catch (Exception $e) {
+        return false;
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    if (isset($_POST['email']) && isset($_POST['password'])) {
-        // Step 1: Authenticate user credentials
-        $email = $_POST['email'];
-        $password = $_POST['password'];
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-        // Validate inputs
-        if (!empty($email) && !empty($password)) {
-            $stmt = $con->prepare("SELECT * FROM register WHERE email = ? AND pass = ?");
-            $stmt->bind_param("ss", $email, $password);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows > 0) {
-                // User authenticated
-                $_SESSION['email'] = $email;
-
-                // Check if the user has the "Remember Me" cookie
-                if (isset($_COOKIE['remember_me']) && $_COOKIE['remember_me'] === $email) {
-                    $_SESSION['user'] = $email;
-                    header("Location: dashboard.php");
-                    exit();
-                }
-
-                // Otherwise, proceed to OTP
-                // Generate OTP
-                $otp = rand(100000, 999999);
-
-                // Calculate expiration time (5 minutes from now)
-                $expires_at = date("Y-m-d H:i:s", strtotime("+5 minutes"));
-
-                // Save OTP in the database
-                $stmt = $con->prepare("INSERT INTO otp_requests (email, otp, expires_at) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $email, $otp, $expires_at);
-
-                if ($stmt->execute()) {
-                    // Send OTP to email
-                    $mail = new PHPMailer(true);
-                    try {
-                        $mail->isSMTP();
-                        $mail->Host = 'smtp.gmail.com'; // Replace with your SMTP server
-                        $mail->SMTPAuth = true;
-                        $mail->Username = 'aquilatekno@gmail.com'; // Replace with your email
-                        $mail->Password = 'ofvrnqpchavqnref'; // Replace with your email password or app password
-                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                        $mail->Port = 587;
-
-                        $mail->setFrom('aquilatekno@gmail.com', 'Aquila Tekno Solutions');
-                        $mail->addAddress($email);
-
-                        $mail->isHTML(true);
-                        $mail->Subject = 'Your Login OTP';
-                        $mail->Body = "Your OTP for login is: <b>$otp</b>";
-
-                        $mail->send();
-                        echo "<script type='text/javascript'>alert('OTP sent to your email. Please check your inbox.');</script>";
-                        header("Location: otpverify.php"); // Redirect to otpverify.php
-                        exit();
-                    } catch (Exception $e) {
-                        echo "<script type='text/javascript'>alert('Failed to send OTP: {$mail->ErrorInfo}');</script>";
-                    }
-                } else {
-                    echo "<script type='text/javascript'>alert('Failed to generate OTP. Please try again later.');</script>";
-                }
-                $stmt->close();
-            } else {
-                // Invalid credentials
-                echo "<script type='text/javascript'>alert('Invalid email or password.');</script>";
-            }
-        } else {
-            echo "<script type='text/javascript'>alert('Please fill in both fields.');</script>";
-        }
+    if (empty($email) || empty($password)) {
+        echo "<script>alert('Please fill in both fields.');</script>";
+        exit;
     }
+
+    $stmt = $con->prepare("SELECT * FROM register WHERE email = ? AND pass = ?");
+    $stmt->bind_param("ss", $email, $password);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $_SESSION['email'] = $email;
+        $user = $result->fetch_assoc();
+
+        if (isset($_COOKIE['remember_me']) && $_COOKIE['remember_me'] === $email) {
+            $_SESSION['user'] = $email;
+            header("Location: dashboard.php");
+            exit;
+        }
+
+        $otp = rand(100000, 999999);
+        $expires_at = date("Y-m-d H:i:s", strtotime("+5 minutes"));
+
+        $stmt = $con->prepare("INSERT INTO otp_requests (email, otp, expires_at) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $email, $otp, $expires_at);
+
+        if ($stmt->execute() && sendOTP($email, $otp)) {
+            header("Location: otpverify.php");
+            exit;
+        } else {
+            echo "<script>alert('Failed to send OTP. Please try again.');</script>";
+        }
+    } else {
+        echo "<script>alert('Invalid email or password.');</script>";
+    }
+    $stmt->close();
 }
 ?>
 

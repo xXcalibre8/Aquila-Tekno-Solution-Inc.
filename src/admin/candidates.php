@@ -8,78 +8,109 @@ include("../config.php");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AQUILA CORPS</title>
+    <title>Candidates - AQUILA CORPS</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="candidates.css">
+    <link rel="stylesheet" href="newdb.css"> <!-- Add this for sidebar styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-
-<!-- Sidebar -->
-<div class="sidebar">
-    <h1>
-    <img src="../design/aquila.png" alt="Logo">
-        AQUILA CORPS
-    </h1>
-    <a href="dashboard.php"><p>Dashboard</p></a>
-    <a href="all_employees.php"><p>Employees</p></a>
-    <a href="all_departments.php"><p>Departments</p></a>
-    <a href="attendance.php"><p>Attendance</p></a>
-    <a href="jobs.php"><p>Jobs</p></a>
-    <a href="candidates.php"><p>Candidates</p></a>
-    <a href="leaves.php"><p>Leaves</p></a>
-    <a href="holidays.php"><p>Holidays</p></a>
-    <a href="../login_page.php"><p>Logout</p></a>
-</div>
-
-<!-- Main Content -->
-<div class="main-content">
-    <div class="content-overlay">
-        <p>Welcome Admin</p>
-        
-        <!-- Add Candidate Button -->
-        <button class="add-candidate-btn" onclick="openModal()">Add Candidate</button>
-
-        <!-- Candidate Table -->
-        <table class="candidate-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Candidate Name</th>
-                    <th>Applied Date</th>
-                    <th>Email Address</th>
-                    <th>Age</th>
-                    <th>Contact Number</th>
-                    <th>Applied Job</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="candidate-table-body">
-    <?php
-    $sql = "SELECT * FROM candidates";
-    $result = $conn->query($sql);
-
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr>
-                <td>{$row['id']}</td>
-                <td>{$row['name']}</td>
-                <td>{$row['applied_date']}</td>
-                <td>{$row['email']}</td>
-                <td>{$row['age']}</td>
-                <td>{$row['contact_number']}</td>
-                <td>{$row['applied_job']}</td>
-                <td class='status status-" . strtolower(str_replace(' ', '-', $row['status'])) . "'>{$row['status']}</td>
-                <td><button onclick='openModal(true, this.parentElement.parentElement)'>Edit</button> <button onclick='deleteCandidate(this.parentElement.parentElement)'>Delete</button></td>
-            </tr>";
-        }
-    }
-    ?>
-</tbody>
-
-        </table>
+<div class="container">
+    <!-- New Improved Sidebar -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <img src="../design/aquila.png" alt="Logo">
+            <h1>AQUILA CORPS</h1>
+        </div>
+        <nav class="nav-menu">
+            <a href="dashboard.php" class="nav-link">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="all_employees.php" class="nav-link">
+                <i class="fas fa-users"></i>
+                <span>Employees</span>
+            </a>
+            <a href="all_departments.php" class="nav-link">
+                <i class="fas fa-building"></i>
+                <span>Departments</span>
+            </a>
+            <a href="attendance.php" class="nav-link">
+                <i class="fas fa-clock"></i>
+                <span>Attendance</span>
+            </a>
+            <a href="jobs.php" class="nav-link">
+                <i class="fas fa-briefcase"></i>
+                <span>Jobs</span>
+            </a>
+            <a href="candidates.php" class="nav-link">
+                <i class="fas fa-user-tie"></i>
+                <span>Candidates</span>
+            </a>
+            <a href="leaves.php" class="nav-link">
+                <i class="fas fa-calendar-minus"></i>
+                <span>Leaves</span>
+            </a>
+            <a href="holidays.php" class="nav-link">
+                <i class="fas fa-calendar"></i>
+                <span>Holidays</span>
+            </a>
+            <a href="../login_page.php" class="nav-link logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
     </div>
-</div>  
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-overlay">
+            <p>Welcome Admin</p>
+            
+            <!-- Add Candidate Button -->
+            <button class="add-candidate-btn" onclick="openModal()">Add Candidate</button>
+
+            <!-- Candidate Table -->
+            <table class="candidate-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Candidate Name</th>
+                        <th>Applied Date</th>
+                        <th>Email Address</th>
+                        <th>Age</th>
+                        <th>Contact Number</th>
+                        <th>Applied Job</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="candidate-table-body">
+                <?php
+                $sql = "SELECT * FROM candidates";
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<tr>
+                            <td>{$row['id']}</td>
+                            <td>{$row['name']}</td>
+                            <td>{$row['applied_date']}</td>
+                            <td>{$row['email']}</td>
+                            <td>{$row['age']}</td>
+                            <td>{$row['contact_number']}</td>
+                            <td>{$row['applied_job']}</td>
+                            <td class='status status-" . strtolower(str_replace(' ', '-', $row['status'])) . "'>{$row['status']}</td>
+                            <td><button onclick='openModal(true, this.parentElement.parentElement)'>Edit</button> <button onclick='deleteCandidate(this.parentElement.parentElement)'>Delete</button></td>
+                        </tr>";
+                    }
+                }
+                ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <!-- Add/Edit Candidate Modal -->
 <div class="modal" id="addCandidateModal">

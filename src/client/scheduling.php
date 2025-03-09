@@ -3,14 +3,18 @@
 include "../config.php";
 session_start();
 
-if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'client') {
-    header("Location: login_page.php");
-    exit();
-} 
+if (!isset($_SESSION['id'])) {
+  header("Location: login_page.php");
+  exit();
+}
 
+if ($_SESSION['roles'] !== 'client') {
+  header("Location: login_page.php");
+  exit();
+}
 function getAppointments() {
     global $conn;
-    $clientId = $_SESSION['username'];
+    $clientId = $_SESSION['id'];
     $sql = "SELECT client_id, project_name, appointment_date FROM appointments WHERE client_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $clientId);  // Changed "i" to "s"
@@ -23,7 +27,7 @@ function getAppointments() {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $projectName = $_POST["projectName"];
     $appointmentDate = $_POST["appointmentDate"];
-    $clientId = $_SESSION['username']; // Assuming you store user IDs in the session
+    $clientId = $_SESSION['id']; // Assuming you store user IDs in the session
 
     // Prepare and execute SQL statement
     $sql = "INSERT INTO appointments (client_id, project_name, appointment_date, created_at) 

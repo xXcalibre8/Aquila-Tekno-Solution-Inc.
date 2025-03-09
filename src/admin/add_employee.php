@@ -1,33 +1,25 @@
 <?php
-include '../config.php'; // Include your database connection
+include("../config.php");
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $firstName = $_POST['first_name'];
+    $lastName = $_POST['last_name'];
     $age = $_POST['age'];
     $city = $_POST['city'];
     $position = $_POST['position'];
     $salary = $_POST['salary'];
-    $start_date = $_POST['start_date'];
-    $email = $_POST['email']; 
+    $email = $_POST['email'];
     $phone = $_POST['phone'];
     
-    // Insert employee data into the database
-    $stmt = $con->prepare("INSERT INTO employees (first_name, last_name, age, city, position, salary, start_date, email, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssissdsss", $first_name, $last_name, $age, $city, $position, $salary, $start_date, $email, $phone);
+    $stmt = $con->prepare("INSERT INTO employees (first_name, last_name, age, city, position, salary, email, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssississs", $firstName, $lastName, $age, $city, $position, $salary, $email, $phone);
     
     if ($stmt->execute()) {
-        echo "<script>
-            alert('Employee added successfully!');
-            window.location.href = 'all_employees.php';
-        </script>";
+        header("Location: all_employees.php?success=added");
+        exit();
     } else {
-        echo "<script>
-            alert('Failed to add employee. Please try again.');
-            window.history.back();
-        </script>";
+        header("Location: all_employees.php?error=add_failed");
+        exit();
     }
-
-    $stmt->close();
-    $con->close();
 }
+?>

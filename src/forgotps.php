@@ -5,65 +5,67 @@ require '../vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    if (isset($_POST['recovery_option'])) {
-        $recovery_option = $_POST['recovery_option'];
+function sendResetEmail($email, $token) {
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'aquilatekno@gmail.com';
+        $mail->Password = 'ofvrnqpchavqnref';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        $mail->setFrom('aquilatekno@gmail.com', 'Aquila Tekno Solutions');
+        $mail->addAddress($email);
+        $mail->isHTML(true);
         
-        if ($recovery_option == 'email') {
-            $email = $_POST['email'];
+        $resetLink = "http://localhost/Webauth/src/reset_password.php?token=" . $token;
+        $mail->Subject = 'Password Reset Request';
+        $mail->Body = "Click the link below to reset your password:<br><a href='$resetLink'>Reset Password</a>";
 
-            // Validate email input
-            if (!empty($email)) {
-                $stmt = $con->prepare("SELECT * FROM register WHERE email = ?");
-                $stmt->bind_param("s", $email);
-                $stmt->execute();
-                $result = $stmt->get_result();
+        return $mail->send();
+    } catch (Exception $e) {
+        return false;
+    }
+}
 
-                if ($result->num_rows > 0) {
-                    // User found, send recovery email
-                    $token = bin2hex(random_bytes(16)); // Generate a shorter token
-                    $expires_at = date("Y-m-d H:i:s", strtotime("+24 hours")); // Token expiry time set to 24 hours
+function handlePasswordReset($con, $email) {
+    if (empty($email)) {
+        return "Please enter your email address.";
+    }
 
-                    // Save token in the database
-                    $stmt = $con->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
-                    $stmt->bind_param("sss", $email, $token, $expires_at);
-                    if ($stmt->execute()) {
-                        // Send recovery email
-                        $mail = new PHPMailer(true);
-                        try {
-                            $mail->isSMTP();
-                            $mail->Host = 'smtp.gmail.com'; // Replace with your SMTP server
-                            $mail->SMTPAuth = true;
-                            $mail->Username = 'aquilatekno@gmail.com'; // Replace with your email
-                            $mail->Password = 'ofvrnqpchavqnref'; // Replace with your email password or app password
-                            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                            $mail->Port = 587;
+    $stmt = $con->prepare("SELECT * FROM register WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    
+    if ($stmt->get_result()->num_rows === 0) {
+        return "Email not found in our records.";
+    }
 
-                            $mail->setFrom('aquilatekno@gmail.com', 'Aquila Tekno Solutions');
-                            $mail->addAddress($email);
+    try {
+        $token = bin2hex(random_bytes(16));
+        $expires_at = date("Y-m-d H:i:s", strtotime("+24 hours"));
 
-                            $mail->isHTML(true);
-                            $mail->Subject = 'Password Recovery';
-                            $mail->Body = "Click the following link to reset your password: <a href='http://localhost:90/draftwebsite/reset_password.php?token=$token'>Reset Password</a>";
+        $stmt = $con->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $email, $token, $expires_at);
+        
+        if ($stmt->execute() && sendResetEmail($email, $token)) {
+            return "success";
+        }
+        return "Failed to send reset email. Please try again.";
+    } catch (Exception $e) {
+        return "An error occurred. Please try again.";
+    }
+}
 
-                            $mail->send();
-                            echo "<script type='text/javascript'>alert('Recovery email sent. Please check your inbox.');</script>";
-                        } catch (Exception $e) {
-                            echo "<script type='text/javascript'>alert('Failed to send recovery email: {$mail->ErrorInfo}');</script>";
-                        }
-                    } else {
-                        echo "<script type='text/javascript'>alert('Failed to generate recovery token. Please try again later.');</script>";
-                    }
-                } else {
-                    echo "<script type='text/javascript'>alert('No account found with that email.');</script>";
-                }
-                $stmt->close();
-            } else {
-                echo "<script type='text/javascript'>alert('Please enter your email.');</script>";
-            }
-        } elseif ($recovery_option == 'phone') {
-            // Handle phone recovery option here
-            echo "<script type='text/javascript'>alert('Phone recovery not implemented yet.');</script>";
+if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['recovery_option'])) {
+    if ($_POST['recovery_option'] == 'email') {
+        $result = handlePasswordReset($con, $_POST['email'] ?? '');
+        if ($result === "success") {
+            echo "<script>alert('Password reset link sent to your email.');</script>";
+        } else {
+            echo "<script>alert('$result');</script>";
         }
     }
 }
@@ -74,38 +76,37 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password</title>
+    <title>Password Recovery</title>
     <link rel="stylesheet" href="login_page.css">
 </head>
 <body>
-
-<video autoplay muted loop class="bg-video3">
-    <source src="design/bg.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
+    <video autoplay muted loop class="bg-video3">
+        <source src="design/bg.mp4" type="video/mp4">
+    </video>
 
     <div class="container">
-        <div class="table-responsive">
-            <div class="box2">
-                <form method="POST">
-                    <div class="forgot-email">
-                        <label for="email">Enter your email:</label>
-                        <br>
-                        <input type="text" name="email" id="email" placeholder="Email" class="form-control"/>
-                    </div>
-                    <div class="form-group">
-                        <label for="recovery_option">Choose recovery option:</label>
-                        <select name="recovery_option" id="recovery_option" class="recov-opt" required>
-                            <option value="email">Email</option>
-                            <option value="phone">Phone (Not implemented)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" value="Submit" class="submit-button" />
-                    </div>
-                    <p class="error"><?php if(!empty($msg)){ echo $msg; } ?></p>
-                </form>
+        <div class="box2">
+            <div class="header-section">
+                <img src="design/aquila.png" alt="System Logo" class="logo">
+                <h2 class="company-name">Aquila Tekno Solutions Inc.</h2>
+                <h3 class="page-title">Password Recovery</h3>
             </div>
+            <form method="POST">
+                <div class="forgot-email">
+                    <label>Recovery Method:</label>
+                    <select name="recovery_option" required>
+                        <option value="email">Email</option>
+                    </select>
+                </div>
+                <div class="forgot-email">
+                    <label>Email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="button-container">
+                    <button type="submit" class="verify-button">Send Reset Link</button>
+                    <button type="button" class="resend-button" onclick="window.location.href='login_page.php'">Back to Login</button>
+                </div>
+            </form>
         </div>
     </div>
 </body>
